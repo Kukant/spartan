@@ -1,0 +1,64 @@
+#!/usr/bin/python3
+
+#	aplikace k behu vyzaduje: requests, bs4
+#	
+#	spusteni: ./spartan <regex cas> <regex uroven> <email>
+#
+
+import requests
+import bs4
+import sys
+import re
+import time
+import os
+
+def get_token(arg):
+	return arg.split("name='csrfmiddlewaretoken' value='")[1].split("'")[0]
+
+regex = sys.argv[1] if len(sys.argv) > 1 else 'Čt 28. 4.'
+level = sys.argv[2] if len(sys.argv) > 2 else 'Pokročilí'
+email = sys.argv[3] if len(sys.argv) > 3 else 'kukant96@gmail.com'
+
+print("Spustil se proces registrace s regex: '%s'" %regex)
+
+s = requests.session()
+while True:
+	try:
+		r = s.get('http://www.extrabrno.cz/events/')
+		if not 'logout/">Odhlásit' in r.text:
+			r = s.get('http://www.extrabrno.cz/accounts/login/')
+			token = get_token(r.text)
+			web = s.post('http://www.extrabrno.cz/accounts/login/',
+						 data={ 'login' : 'Kukant96@gmail.com', 'password': '123963321', 'csrfmiddlewaretoken': token})
+			r = s.get('http://www.extrabrno.cz/events/')
+
+		tmp = bs4.BeautifulSoup(r.text, "lxml")
+		prom = tmp.find('table')
+		for line in tmp.find('table').findAll('tr'): # pro kazdy radek v tabulce events
+			tds = line.findAll('td')
+			if len(tds) == 0:
+				continue
+
+			if not re.search(level, tds[2].text): # pokud udalost neodpovida urovni
+				continue
+
+			if not re.search(regex, tds[0].text): # pokud udalost neodpovida casu
+				continue
+
+			eventid = tds[2].find('a')['href'].split('/')[2]
+			r = s.get('http://www.extrabrno.cz/events/%s/' % eventid)
+
+			token = get_token(r.text)
+			web = s.post('http://www.extrabrno.cz/events/register-user/?next=/events/%s/' % eventid,
+						 data={ 'event-id': eventid, 'csrfmiddlewaretoken': token})
+			if re.search(r'<button type="submit" class="btn btn-danger">\s*Uvolnit místo\s*</button>', web.text):
+				os.system("echo 'Byl jste uspene prihlasen na udalost %s' | mail -s 'registrace' %s" % (regex, email))
+				print("Byl jste uspesne prihlasen na udalost %s" % tds[0].text)
+				exit(0)
+
+	except Exception as er:
+		with open("logfile.txt", "a") as logfile:
+			print("chyba: %s\n" % er)
+			logfile.write("chyba: %s\n" % er)
+	time.sleep(300)
+	exit()
