@@ -1,0 +1,18 @@
+chyba: first argument must be string or compiled pattern
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
+chyba: list index out of range
