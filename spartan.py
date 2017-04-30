@@ -3,7 +3,7 @@
 #	Tomas Kukan
 #	Automaticka registrace na SRTGB events
 #	aplikace k behu vyzaduje: requests, bs4, xml
-#	instalace: python3 -m pip --user requests bs4 xml	
+#	instalace: python3 -m pip install --user requests bs4 lxml	
 #
 #	spusteni: ./spartan <regex cas> <regex uroven> <email>
 #
